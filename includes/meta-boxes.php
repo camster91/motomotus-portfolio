@@ -20,6 +20,10 @@ function motomotus_add_work_meta_boxes() {
 }
 
 function motomotus_work_meta_box_html( $post ) {
+    if ( ! is_object( $post ) ) {
+        return;
+    }
+
 	$agency       = get_post_meta( $post->ID, '_motomotus_agency', true );
 	$preview_video = get_post_meta( $post->ID, '_motomotus_preview_video', true );
 	$main_video    = get_post_meta( $post->ID, '_motomotus_main_video', true );
@@ -48,6 +52,16 @@ function motomotus_work_meta_box_html( $post ) {
 
 add_action( 'save_post', 'motomotus_save_work_meta_data', 10, 2 );
 function motomotus_save_work_meta_data( $post_id, $post ) {
+    // Basic verification
+    if ( ! is_object( $post ) || ! isset( $post->post_type ) ) {
+        return;
+    }
+
+    // Post type check
+    if ( $post->post_type !== 'motomotus_work' ) {
+        return;
+    }
+
     // Nonce check
     if ( ! isset( $_POST['motomotus_meta_nonce'] ) || ! wp_verify_nonce( $_POST['motomotus_meta_nonce'], 'motomotus_save_meta_action' ) ) {
         return;
@@ -55,11 +69,6 @@ function motomotus_save_work_meta_data( $post_id, $post ) {
 
     // Auth check
     if ( ! current_user_can( 'edit_post', $post_id ) ) {
-        return;
-    }
-
-    // Post type check (Critical to prevent fatal errors on other post types)
-    if ( $post->post_type !== 'motomotus_work' ) {
         return;
     }
 

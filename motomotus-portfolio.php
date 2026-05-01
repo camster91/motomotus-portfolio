@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Motomotus Portfolio
  * Description: A high-performance portfolio showcase plugin that replicates the minimalist aesthetic and smooth interactions of the Motomotus "Work" page.
- * Version: 1.1.2
+ * Version: 1.1.3
  * Author: Gemini CLI
  * Text Domain: motomotus
  */
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define constants
 if ( ! defined( 'MOTOMOTUS_VERSION' ) ) {
-    define( 'MOTOMOTUS_VERSION', '1.1.2' );
+    define( 'MOTOMOTUS_VERSION', '1.1.3' );
 }
 if ( ! defined( 'MOTOMOTUS_PATH' ) ) {
     define( 'MOTOMOTUS_PATH', plugin_dir_path( __FILE__ ) );
