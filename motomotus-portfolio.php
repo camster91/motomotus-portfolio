@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Motomotus Portfolio
  * Description: A portfolio plugin that mimics the Motomotus work page with dynamic grid, video previews, and smooth animations.
- * Version: 1.1.1
+ * Version: 1.1.2
  * Author: Gemini CLI
  * Text Domain: motomotus
  */
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Define constants
 if ( ! defined( 'MOTOMOTUS_VERSION' ) ) {
-    define( 'MOTOMOTUS_VERSION', '1.1.1' );
+    define( 'MOTOMOTUS_VERSION', '1.1.2' );
 }
 if ( ! defined( 'MOTOMOTUS_PATH' ) ) {
     define( 'MOTOMOTUS_PATH', plugin_dir_path( __FILE__ ) );
@@ -47,10 +47,10 @@ if ( ! function_exists( 'motomotus_plugin_activation' ) ) {
     }
 }
 
-// Setup: Image sizes
-add_action( 'after_setup_theme', 'motomotus_portfolio_setup' );
-if ( ! function_exists( 'motomotus_portfolio_setup' ) ) {
-    function motomotus_portfolio_setup() {
+// Setup: Image sizes & other init tasks
+add_action( 'init', 'motomotus_portfolio_init' );
+if ( ! function_exists( 'motomotus_portfolio_init' ) ) {
+    function motomotus_portfolio_init() {
         add_image_size( 'motomotus-thumb', 800, 450, true );
     }
 }

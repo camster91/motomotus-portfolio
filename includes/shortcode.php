@@ -19,6 +19,7 @@ function motomotus_work_shortcode( $atts ) {
         'posts_per_page' => (int) $atts['posts_per_page'],
         'orderby'        => 'menu_order',
         'order'          => 'ASC',
+        'post_status'    => 'publish',
     );
 
     if ( ! empty( $atts['category'] ) ) {
@@ -51,42 +52,45 @@ function motomotus_work_shortcode( $atts ) {
 
         <!-- Grid -->
         <div class="motomotus-grid">
-            <?php if ( $query->have_posts() ) : while ( $query->have_posts() ) : $query->the_post(); 
-                $agency = get_post_meta( get_the_ID(), '_motomotus_agency', true );
-                $preview_video = get_post_meta( get_the_ID(), '_motomotus_preview_video', true );
-                $main_video = get_post_meta( get_the_ID(), '_motomotus_main_video', true );
-                $caption = get_post_meta( get_the_ID(), '_motomotus_caption', true );
-                $thumbnail = get_the_post_thumbnail_url( get_the_ID(), 'motomotus-thumb' );
-                
-                $categories = wp_get_post_terms( get_the_ID(), 'work_category', array( 'fields' => 'slugs' ) );
-                $cat_class = '';
-                if ( ! is_wp_error( $categories ) && ! empty( $categories ) ) {
-                    $cat_class = implode( ' ', array_map( 'sanitize_html_class', $categories ) );
-                }
-            ?>
-                <div class="motomotus-item <?php echo esc_attr( $cat_class ); ?>" 
-                     data-video="<?php echo esc_url( $main_video ); ?>"
-                     data-caption="<?php echo esc_attr( $caption ); ?>">
-                    <div class="motomotus-item-inner">
-                        <div class="motomotus-media">
-                            <?php if ( $thumbnail ) : ?>
-                                <img src="<?php echo esc_url( $thumbnail ); ?>" alt="<?php the_title_attribute(); ?>" class="motomotus-thumb">
-                            <?php endif; ?>
-                            <?php if ( $preview_video ) : ?>
-                                <video class="motomotus-preview-video" muted loop playsinline preload="none">
-                                    <source src="<?php echo esc_url( $preview_video ); ?>" type="video/mp4">
-                                </video>
-                            <?php endif; ?>
-                        </div>
-                        <div class="motomotus-info">
-                            <h3 class="motomotus-title"><?php the_title(); ?></h3>
-                            <?php if ( $agency ) : ?>
-                                <p class="motomotus-agency"><?php echo esc_html( $agency ); ?></p>
-                            <?php endif; ?>
+            <?php if ( $query->have_posts() ) : ?>
+                <?php while ( $query->have_posts() ) : $query->the_post(); 
+                    $agency = get_post_meta( get_the_ID(), '_motomotus_agency', true );
+                    $preview_video = get_post_meta( get_the_ID(), '_motomotus_preview_video', true );
+                    $main_video = get_post_meta( get_the_ID(), '_motomotus_main_video', true );
+                    $caption = get_post_meta( get_the_ID(), '_motomotus_caption', true );
+                    $thumbnail = get_the_post_thumbnail_url( get_the_ID(), 'motomotus-thumb' );
+                    
+                    $categories = wp_get_post_terms( get_the_ID(), 'work_category', array( 'fields' => 'slugs' ) );
+                    $cat_class = '';
+                    if ( ! is_wp_error( $categories ) && ! empty( $categories ) ) {
+                        $cat_class = implode( ' ', array_map( 'sanitize_html_class', $categories ) );
+                    }
+                ?>
+                    <div class="motomotus-item <?php echo esc_attr( $cat_class ); ?>" 
+                         data-video="<?php echo esc_url( $main_video ); ?>"
+                         data-caption="<?php echo esc_attr( $caption ); ?>">
+                        <div class="motomotus-item-inner">
+                            <div class="motomotus-media">
+                                <?php if ( $thumbnail ) : ?>
+                                    <img src="<?php echo esc_url( $thumbnail ); ?>" alt="<?php the_title_attribute(); ?>" class="motomotus-thumb">
+                                <?php endif; ?>
+                                <?php if ( $preview_video ) : ?>
+                                    <video class="motomotus-preview-video" muted loop playsinline preload="none">
+                                        <source src="<?php echo esc_url( $preview_video ); ?>" type="video/mp4">
+                                    </video>
+                                <?php endif; ?>
+                            </div>
+                            <div class="motomotus-info">
+                                <h3 class="motomotus-title"><?php the_title(); ?></h3>
+                                <?php if ( $agency ) : ?>
+                                    <p class="motomotus-agency"><?php echo esc_html( $agency ); ?></p>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
-                </div>
-            <?php endwhile; wp_reset_postdata(); else : ?>
+                <?php endwhile; ?>
+                <?php wp_reset_postdata(); ?>
+            <?php else : ?>
                 <p><?php _e( 'No work items found.', 'motomotus' ); ?></p>
             <?php endif; ?>
         </div>
