@@ -16,7 +16,7 @@ function motomotus_work_shortcode( $atts ) {
 
     $args = array(
         'post_type'      => 'motomotus_work',
-        'posts_per_page' => $atts['posts_per_page'],
+        'posts_per_page' => (int) $atts['posts_per_page'],
         'orderby'        => 'menu_order',
         'order'          => 'ASC',
     );
@@ -26,7 +26,7 @@ function motomotus_work_shortcode( $atts ) {
             array(
                 'taxonomy' => 'work_category',
                 'field'    => 'slug',
-                'terms'    => $atts['category'],
+                'terms'    => sanitize_text_field( $atts['category'] ),
             ),
         );
     }
@@ -38,11 +38,13 @@ function motomotus_work_shortcode( $atts ) {
     <div class="motomotus-container">
         <!-- Filter Menu -->
         <div class="motomotus-filters">
-            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn active" data-filter="all"><?php _e( 'All', 'motomotus' ); ?></button>
             <?php
             $terms = get_terms( array( 'taxonomy' => 'work_category', 'hide_empty' => true ) );
-            foreach ( $terms as $term ) {
-                echo '<button class="filter-btn" data-filter="' . esc_attr( $term->slug ) . '">' . esc_html( $term->name ) . '</button>';
+            if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+                foreach ( $terms as $term ) {
+                    echo '<button class="filter-btn" data-filter="' . esc_attr( $term->slug ) . '">' . esc_html( $term->name ) . '</button>';
+                }
             }
             ?>
         </div>
@@ -54,9 +56,13 @@ function motomotus_work_shortcode( $atts ) {
                 $preview_video = get_post_meta( get_the_ID(), '_motomotus_preview_video', true );
                 $main_video = get_post_meta( get_the_ID(), '_motomotus_main_video', true );
                 $caption = get_post_meta( get_the_ID(), '_motomotus_caption', true );
-                $thumbnail = get_the_post_thumbnail_url( get_the_ID(), 'motomotus-thumb' ); // Use custom 16:9 size
+                $thumbnail = get_the_post_thumbnail_url( get_the_ID(), 'motomotus-thumb' );
+                
                 $categories = wp_get_post_terms( get_the_ID(), 'work_category', array( 'fields' => 'slugs' ) );
-                $cat_class = implode( ' ', array_map( 'sanitize_html_class', $categories ) );
+                $cat_class = '';
+                if ( ! is_wp_error( $categories ) && ! empty( $categories ) ) {
+                    $cat_class = implode( ' ', array_map( 'sanitize_html_class', $categories ) );
+                }
             ?>
                 <div class="motomotus-item <?php echo esc_attr( $cat_class ); ?>" 
                      data-video="<?php echo esc_url( $main_video ); ?>"
@@ -91,12 +97,8 @@ function motomotus_work_shortcode( $atts ) {
         <div class="modal-overlay"></div>
         <div class="modal-content">
             <button class="modal-close">&times;</button>
-            <div class="video-container">
-                <!-- Video will be injected here via JS -->
-            </div>
-            <div class="modal-caption">
-                <!-- Caption will be injected here via JS -->
-            </div>
+            <div class="video-container"></div>
+            <div class="modal-caption"></div>
         </div>
     </div>
     <?php
