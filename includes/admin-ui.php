@@ -58,13 +58,3 @@ function motomotus_admin_sort_work( $query ) {
         }
     }
 }
-
-// Add Quick Edit support for Menu Order
-add_filter( 'page_attributes_dropdown_pages_args', 'motomotus_enable_menu_order_for_work', 10, 2 );
-function motomotus_enable_menu_order_for_work( $dropdown_args, $post ) {
-    if ( is_object( $post ) && $post->post_type === 'motomotus_work' ) {
-        // This filter is often used to adjust hierarchical dropdowns, 
-        // but it's a good place to ensure attributes are supported.
-    }
-    return $dropdown_args;
-}

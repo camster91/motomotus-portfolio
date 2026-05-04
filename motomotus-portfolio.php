@@ -5,6 +5,8 @@
  * Version: 1.1.3
  * Author: Gemini CLI
  * Text Domain: motomotus
+ * License: MIT
+ * License URI: https://opensource.org/licenses/MIT
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -60,8 +62,4 @@ function motomotus_load_frontend_assets() {
 	
 	wp_enqueue_style( 'motomotus-style', MOTOMOTUS_URL . 'assets/css/style.css', array(), MOTOMOTUS_VERSION );
 	wp_enqueue_script( 'motomotus-script', MOTOMOTUS_URL . 'assets/js/main.js', array( 'gsap' ), MOTOMOTUS_VERSION, true );
-
-    wp_localize_script( 'motomotus-script', 'motomotusData', array(
-        'ajaxUrl' => admin_url( 'admin-ajax.php' )
-    ));
 }

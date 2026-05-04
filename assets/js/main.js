@@ -2,20 +2,55 @@ document.addEventListener('DOMContentLoaded', function() {
     const grid = document.querySelector('.motomotus-grid');
     if (!grid) return;
 
+    // Ensure GSAP is loaded
+    if (typeof gsap === 'undefined') {
+        console.warn('Motomotus Portfolio: GSAP is not loaded. Animations will be disabled.');
+    }
+
     const items = document.querySelectorAll('.motomotus-item');
     const filterBtns = document.querySelectorAll('.filter-btn');
     const modal = document.getElementById('motomotus-video-modal');
+    if (!modal) return;
+
     const modalContent = modal.querySelector('.video-container');
     const modalCaption = modal.querySelector('.modal-caption');
     const modalClose = modal.querySelector('.modal-close');
     const modalOverlay = modal.querySelector('.modal-overlay');
 
+    /**
+     * Extracts Video ID from various YouTube/Vimeo formats
+     */
+    function getEmbedUrl(url) {
+        let videoHtml = '';
+        
+        // YouTube
+        const ytRegex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/i;
+        const ytMatch = url.match(ytRegex);
+        
+        // Vimeo
+        const vimeoRegex = /(?:vimeo\.com\/|player\.vimeo\.com\/video\/)([0-9]+)/i;
+        const vimeoMatch = url.match(vimeoRegex);
+
+        if (ytMatch && ytMatch[1]) {
+            videoHtml = `<iframe src="https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+        } else if (vimeoMatch && vimeoMatch[1]) {
+            videoHtml = `<iframe src="https://player.vimeo.com/video/${vimeoMatch[1]}?autoplay=1" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+        } else {
+            // Fallback to direct video link
+            videoHtml = `<video src="${url}" controls autoplay playsinline></video>`;
+        }
+        
+        return videoHtml;
+    }
+
     // --- Hover Video Logic ---
     items.forEach(item => {
         const video = item.querySelector('.motomotus-preview-video');
+        const inner = item.querySelector('.motomotus-item-inner');
+
         if (video) {
             item.addEventListener('mouseenter', () => {
-                video.play();
+                video.play().catch(e => console.log('Autoplay prevented'));
             });
             item.addEventListener('mouseleave', () => {
                 video.pause();
@@ -23,28 +58,30 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        // --- Magnetic Effect (Simple) ---
-        item.addEventListener('mousemove', (e) => {
-            const rect = item.getBoundingClientRect();
-            const x = e.clientX - rect.left - rect.width / 2;
-            const y = e.clientY - rect.top - rect.height / 2;
-            
-            gsap.to(item.querySelector('.motomotus-item-inner'), {
-                x: x * 0.1,
-                y: y * 0.1,
-                duration: 0.5,
-                ease: 'power2.out'
+        // --- Magnetic Effect ---
+        if (typeof gsap !== 'undefined' && inner) {
+            item.addEventListener('mousemove', (e) => {
+                const rect = item.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                
+                gsap.to(inner, {
+                    x: x * 0.1,
+                    y: y * 0.1,
+                    duration: 0.5,
+                    ease: 'power2.out'
+                });
             });
-        });
 
-        item.addEventListener('mouseleave', () => {
-            gsap.to(item.querySelector('.motomotus-item-inner'), {
-                x: 0,
-                y: 0,
-                duration: 0.5,
-                ease: 'power2.out'
+            item.addEventListener('mouseleave', () => {
+                gsap.to(inner, {
+                    x: 0,
+                    y: 0,
+                    duration: 0.5,
+                    ease: 'power2.out'
+                });
             });
-        });
+        }
 
         // --- Open Modal ---
         item.addEventListener('click', () => {
@@ -52,22 +89,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const caption = item.getAttribute('data-caption');
             if (!videoUrl) return;
 
-            let videoHtml = '';
-            if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
-                const videoId = videoUrl.split('v=')[1] || videoUrl.split('/').pop();
-                videoHtml = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
-            } else if (videoUrl.includes('vimeo.com')) {
-                const videoId = videoUrl.split('/').pop();
-                videoHtml = `<iframe src="https://player.vimeo.com/video/${videoId}?autoplay=1" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
-            } else {
-                videoHtml = `<video src="${videoUrl}" controls autoplay></video>`;
-            }
-
-            modalContent.innerHTML = videoHtml;
+            modalContent.innerHTML = getEmbedUrl(videoUrl);
             modalCaption.innerHTML = caption ? `<div class="caption-inner">${caption}</div>` : '';
             
             modal.style.display = 'flex';
-            gsap.fromTo(modal, { opacity: 0 }, { opacity: 1, duration: 0.3 });
+            if (typeof gsap !== 'undefined') {
+                gsap.fromTo(modal, { opacity: 0 }, { opacity: 1, duration: 0.3 });
+            } else {
+                modal.style.opacity = '1';
+            }
         });
     });
 
@@ -82,22 +112,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Filter items
             items.forEach(item => {
-                if (filter === 'all' || item.classList.contains(filter)) {
-                    gsap.to(item, {
-                        opacity: 1,
-                        scale: 1,
-                        duration: 0.4,
-                        display: 'block',
-                        ease: 'power2.out'
-                    });
+                const isVisible = (filter === 'all' || item.classList.contains(filter));
+                
+                if (typeof gsap !== 'undefined') {
+                    if (isVisible) {
+                        gsap.to(item, {
+                            opacity: 1,
+                            scale: 1,
+                            duration: 0.4,
+                            display: 'block',
+                            ease: 'power2.out'
+                        });
+                    } else {
+                        gsap.to(item, {
+                            opacity: 0,
+                            scale: 0.8,
+                            duration: 0.4,
+                            display: 'none',
+                            ease: 'power2.out'
+                        });
+                    }
                 } else {
-                    gsap.to(item, {
-                        opacity: 0,
-                        scale: 0.8,
-                        duration: 0.4,
-                        display: 'none',
-                        ease: 'power2.out'
-                    });
+                    item.style.display = isVisible ? 'block' : 'none';
+                    item.style.opacity = isVisible ? '1' : '0';
                 }
             });
         });
@@ -105,26 +142,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Modal Closing ---
     const closeModal = () => {
-        gsap.to(modal, {
-            opacity: 0,
-            duration: 0.3,
-            onComplete: () => {
-                modal.style.display = 'none';
-                modalContent.innerHTML = '';
-                modalCaption.innerHTML = '';
-            }
-        });
+        if (typeof gsap !== 'undefined') {
+            gsap.to(modal, {
+                opacity: 0,
+                duration: 0.3,
+                onComplete: () => {
+                    modal.style.display = 'none';
+                    modalContent.innerHTML = '';
+                    modalCaption.innerHTML = '';
+                }
+            });
+        } else {
+            modal.style.display = 'none';
+            modalContent.innerHTML = '';
+            modalCaption.innerHTML = '';
+        }
     };
 
-    modalClose.addEventListener('click', closeModal);
-    modalOverlay.addEventListener('click', closeModal);
+    if (modalClose) modalClose.addEventListener('click', closeModal);
+    if (modalOverlay) modalOverlay.addEventListener('click', closeModal);
 
     // --- Entrance Animation ---
-    gsap.from('.motomotus-item', {
-        y: 50,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.1,
-        ease: 'power3.out'
-    });
+    if (typeof gsap !== 'undefined') {
+        gsap.from('.motomotus-item', {
+            y: 50,
+            opacity: 0,
+            duration: 0.8,
+            stagger: 0.1,
+            ease: 'power3.out'
+        });
+    }
 });
